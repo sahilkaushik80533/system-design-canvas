@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/*
+ * ─── Design Tokens (Tailwind v4 CSS-first config) ───────────────────────────
+ * We define custom theme values via @theme so Tailwind generates utility
+ * classes like `bg-surface`, `text-muted`, `font-sans`, etc.
+ */
+@theme {
+  --color-surface: #0f1117;
+  --color-surface-raised: #181a24;
+  --color-surface-overlay: #1e2030;
+  --color-border-subtle: #2a2d3e;
+  --color-border-default: #363a4f;
+  --color-text-primary: #e2e4f0;
+  --color-text-secondary: #a0a4b8;
+  --color-text-muted: #6c7086;
+  --color-accent-blue: #7aa2f7;
+  --color-accent-purple: #bb9af7;
+  --color-accent-green: #9ece6a;
+  --color-accent-orange: #e0af68;
+  --color-accent-red: #f7768e;
+  --color-accent-cyan: #7dcfff;
+  --color-accent-teal: #73daca;
+  --color-accent-pink: #ff79c6;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+
+/* ─── Global Resets ──────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+}
