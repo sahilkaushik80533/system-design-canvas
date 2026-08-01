@@ -29,7 +29,7 @@ const LAYER_META: Record<NeuralLayerKind, LayerMeta> = {
     icon: '🔽',
     gradient: 'from-accent-teal/20 to-accent-green/10',
     borderClass: 'border-accent-teal/50',
-    getPrimaryParam: (p) => `Pool: 2x2`, // Hardcoded for simplicity in mock
+    getPrimaryParam: () => `Pool: 2x2`, // Hardcoded for simplicity in mock
   },
   lstm: {
     icon: '⏳',
