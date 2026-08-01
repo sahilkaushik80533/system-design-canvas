@@ -5,6 +5,7 @@ import { useCanvasStore } from './store/canvasStore';
 import { HistoryModal } from './components/ui/HistoryModal';
 import { CodeModal } from './components/ui/CodeModal';
 import { exportToJson, exportToPng } from './utils/exportUtils';
+import { API_BASE_URL } from './utils/apiConfig';
 
 function App() {
   const nodes = useCanvasStore((state) => state.nodes);
@@ -22,7 +23,7 @@ function App() {
   const handleEvaluate = async () => {
     setIsEvaluating(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/evaluate', {
+      const response = await fetch(`${API_BASE_URL}/api/evaluate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +48,7 @@ function App() {
   const handleGenerateCode = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/generate-code', {
+      const response = await fetch(`${API_BASE_URL}/api/generate-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

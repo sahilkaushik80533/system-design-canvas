@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useCanvasStore } from '../../store/canvasStore';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 interface HistoryRecord {
   id: number;
@@ -24,7 +25,7 @@ export function HistoryModal({ onClose }: HistoryModalProps) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/history');
+        const response = await fetch(`${API_BASE_URL}/api/history`);
         if (!response.ok) {
           throw new Error('Failed to fetch history');
         }

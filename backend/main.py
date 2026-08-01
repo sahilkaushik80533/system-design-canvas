@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
@@ -38,9 +38,15 @@ async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depe
     system_nodes = [n for n in payload.nodes if n.type == "systemComponent"]
     nn_nodes = [n for n in payload.nodes if n.type == "neuralLayer"]
 
+    # Filter edges to only those relevant to each subsystem
+    sys_node_ids = {n.id for n in system_nodes}
+    nn_node_ids = {n.id for n in nn_nodes}
+    sys_edges = [e for e in payload.edges if e.source in sys_node_ids and e.target in sys_node_ids]
+    nn_edges = [e for e in payload.edges if e.source in nn_node_ids and e.target in nn_node_ids]
+
     # Evaluate subsystems independently
-    sys_eval = evaluate_system_architecture(system_nodes, payload.edges)
-    nn_eval = evaluate_nn_architecture(nn_nodes, payload.edges)
+    sys_eval = evaluate_system_architecture(system_nodes, sys_edges)
+    nn_eval = evaluate_nn_architecture(nn_nodes, nn_edges)
 
     # Calculate an overall composite score
     overall_score = 100
@@ -52,14 +58,21 @@ async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depe
     if nn_nodes and not nn_eval.get("valid"):
         overall_score *= 0.5  # 50% penalty if the NN architecture violates hard constraints
 
-    # Save to db
-    record = ArchitectureRecord(
-        payload=payload.model_dump(),
-        score=int(overall_score)
-    )
-    db.add(record)
-    db.commit()
-    db.refresh(record)
+    # Persist to DB safely
+    record_id = None
+    try:
+        record = ArchitectureRecord(
+            payload=payload.model_dump(),
+            score=int(overall_score)
+        )
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        record_id = record.id
+    except Exception as e:
+        db.rollback()
+        # Log but don't fail the evaluation — persistence is best-effort
+        print(f"[WARN] Failed to persist evaluation record: {e}")
 
     return {
         "status": "success",
@@ -69,12 +82,12 @@ async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depe
         "nn_evaluation": nn_eval,
         "node_count": len(payload.nodes),
         "edge_count": len(payload.edges),
-        "record_id": record.id
+        "record_id": record_id
     }
 
 @app.get("/api/history")
 async def get_history(db: Session = Depends(get_db)):
-    records = db.query(ArchitectureRecord).all()
+    records = db.query(ArchitectureRecord).order_by(ArchitectureRecord.id.desc()).all()
     return records
 
 @app.post("/api/generate-code")

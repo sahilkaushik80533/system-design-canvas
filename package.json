@@ -16,7 +16,6 @@
     "nanoid": "^5.1.16",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "reactflow": "^11.11.4",
     "tailwindcss": "^4.3.3",
     "zustand": "^5.0.14"
   },
