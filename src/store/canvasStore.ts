@@ -78,6 +78,9 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     set({ nodes: [...newNodes], edges: [...newEdges], evaluationResult: null });
   },
 
+  setNodes: (nodes: CanvasNode[]) => set({ nodes }),
+  setEdges: (edges: CanvasEdge[]) => set({ edges }),
+
   clearCanvas: () => {
     set({ nodes: [], edges: [], evaluationResult: null });
   },

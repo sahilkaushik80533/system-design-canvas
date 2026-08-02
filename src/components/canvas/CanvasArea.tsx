@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -13,6 +13,7 @@ import { SystemNode } from '../nodes/SystemNode';
 import { NNNode } from '../nodes/NNNode';
 import { EvaluationPanel } from '../ui/EvaluationPanel';
 import type { CanvasNodeData } from '../../types/canvas.types';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 // ─── Custom Node Registration ───────────────────────────────────────────────
 
@@ -34,6 +35,43 @@ function CanvasInner() {
   const onEdgesChange = useCanvasStore((state) => state.onEdgesChange);
   const onConnect = useCanvasStore((state) => state.onConnect);
   const addNode = useCanvasStore((state) => state.addNode);
+
+  // ─── Auto-Save Pipeline ───
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Do not trigger the save function on the initial mount if the canvas is empty
+    if (nodes.length === 0 && edges.length === 0) {
+      return;
+    }
+
+    const saveTimer = setTimeout(async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/save-architecture`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ nodes, edges }),
+        });
+        
+        if (!response.ok) {
+          console.error('Auto-save failed:', response.status);
+        } else {
+          console.log('Canvas auto-saved successfully.');
+        }
+      } catch (error) {
+        console.error('Auto-save network error:', error);
+      }
+    }, 1500);
+
+    return () => clearTimeout(saveTimer);
+  }, [nodes, edges]);
 
   // ─── Drag and Drop Handlers ───
 

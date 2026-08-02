@@ -117,5 +117,7 @@ export interface CanvasStore {
   setEvaluationResult: (result: any | null) => void;
   evaluationResult: any | null;
   setCanvasState: (nodes: CanvasNode[], edges: CanvasEdge[]) => void;
+  setNodes: (nodes: CanvasNode[]) => void;
+  setEdges: (edges: CanvasEdge[]) => void;
   clearCanvas: () => void;
 }

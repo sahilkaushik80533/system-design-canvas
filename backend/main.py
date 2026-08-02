@@ -48,6 +48,7 @@ async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depe
     sys_eval = evaluate_system_architecture(system_nodes, sys_edges)
     nn_eval = evaluate_nn_architecture(nn_nodes, nn_edges)
 
+
     # Calculate an overall composite score
     overall_score = 100
     if system_nodes:
@@ -89,6 +90,22 @@ async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depe
 async def get_history(db: Session = Depends(get_db)):
     records = db.query(ArchitectureRecord).order_by(ArchitectureRecord.id.desc()).all()
     return records
+
+@app.post("/api/save-architecture")
+async def save_architecture(payload: ArchitecturePayload, db: Session = Depends(get_db)):
+    print(f"Received auto-save: {len(payload.nodes)} nodes, {len(payload.edges)} edges")
+    try:
+        # Save snapshot without computing full evaluation rules
+        record = ArchitectureRecord(
+            payload=payload.model_dump(),
+            score=0
+        )
+        db.add(record)
+        db.commit()
+        return {"status": "success", "message": "Architecture saved successfully"}
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "message": str(e)}
 
 @app.post("/api/generate-code")
 async def generate_code(payload: ArchitecturePayload):
