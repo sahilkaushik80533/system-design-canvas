@@ -74,13 +74,14 @@ async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depe
     record_id = None
     try:
         record = ArchitectureRecord(
-            payload=payload.model_dump(),
+            nodes=[n.model_dump() for n in payload.nodes],
+            edges=[e.model_dump() for e in payload.edges],
             score=int(overall_score)
         )
         db.add(record)
         db.commit()
         db.refresh(record)
-        record_id = record.id
+        record_id = str(record.id)
     except Exception as e:
         db.rollback()
         # Log but don't fail the evaluation — persistence is best-effort
@@ -106,17 +107,21 @@ async def get_history(db: Session = Depends(get_db)):
 async def save_architecture(payload: ArchitecturePayload, db: Session = Depends(get_db)):
     print(f"Received auto-save: {len(payload.nodes)} nodes, {len(payload.edges)} edges")
     try:
-        # Save snapshot without computing full evaluation rules
         record = ArchitectureRecord(
-            payload=payload.model_dump(),
-            score=0
+            nodes=[n.model_dump() for n in payload.nodes],
+            edges=[e.model_dump() for e in payload.edges],
         )
         db.add(record)
         db.commit()
-        return {"status": "success", "message": "Architecture saved successfully"}
+        db.refresh(record)
+        return {
+            "status": "success",
+            "message": "Architecture saved successfully",
+            "id": str(record.id),
+        }
     except Exception as e:
         db.rollback()
-        return {"status": "error", "message": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generate-code")
 async def generate_code(payload: ArchitecturePayload):
