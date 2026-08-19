@@ -1,11 +1,15 @@
 import { Panel } from '@xyflow/react';
 import { useCanvasStore } from '../../store/canvasStore';
 
-export function EvaluationPanel() {
-  const evaluationResult = useCanvasStore((state) => state.evaluationResult);
-  const setEvaluationResult = useCanvasStore((state) => state.setEvaluationResult);
+interface EvaluationPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-  if (!evaluationResult) {
+export function EvaluationPanel({ isOpen, onClose }: EvaluationPanelProps) {
+  const evaluationResult = useCanvasStore((state) => state.evaluationResult);
+
+  if (!isOpen || !evaluationResult) {
     return null;
   }
 
@@ -26,7 +30,7 @@ export function EvaluationPanel() {
   return (
     <Panel
       position="top-right"
-      className="bg-[#242736] p-5 rounded-2xl shadow-2xl border border-gray-700/50 w-[350px] text-gray-200 max-h-[85vh] overflow-y-auto backdrop-blur-md"
+      className="bg-[#242736] p-5 rounded-2xl shadow-2xl border border-gray-700/50 w-[350px] text-gray-200 max-h-[85vh] overflow-y-auto backdrop-blur-md pointer-events-auto z-50"
     >
       <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-3">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -37,7 +41,7 @@ export function EvaluationPanel() {
           </span>
         </h2>
         <button
-          onClick={() => setEvaluationResult(null)}
+          onClick={onClose}
           className="text-gray-400 hover:text-white transition-colors bg-gray-800 hover:bg-gray-700 p-1 rounded-full"
           aria-label="Close"
         >

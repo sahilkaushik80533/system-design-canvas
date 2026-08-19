@@ -13,6 +13,7 @@ function App() {
   const edges = useCanvasStore((state) => state.edges);
 
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [isEvalOpen, setIsEvalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
@@ -38,6 +39,7 @@ function App() {
 
       const result = await response.json();
       setEvaluationResult(result);
+      setIsEvalOpen(true);
     } catch (error) {
       console.error('Failed to evaluate architecture:', error);
       // Removed alert as per standard pattern, UI could be extended to show toast errors
@@ -129,7 +131,7 @@ function App() {
       {/* ── Main Layout ── */}
       <main className="flex flex-1 overflow-hidden relative">
         <Sidebar />
-        <CanvasArea />
+        <CanvasArea isEvalOpen={isEvalOpen} setIsEvalOpen={setIsEvalOpen} />
 
         {/* ── AI Evaluation Panel (floating overlay) ── */}
         <div className="absolute top-4 right-4 z-20">

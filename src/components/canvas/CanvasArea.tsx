@@ -25,7 +25,12 @@ const nodeTypes = {
 
 // ─── Inner Canvas Component ─────────────────────────────────────────────────
 
-function CanvasInner() {
+interface CanvasInnerProps {
+  isEvalOpen: boolean;
+  setIsEvalOpen: (open: boolean) => void;
+}
+
+function CanvasInner({ isEvalOpen, setIsEvalOpen }: CanvasInnerProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -142,10 +147,7 @@ function CanvasInner() {
       >
         <Background color="#363a4f" gap={16} />
         <Controls />
-        <EvaluationPanel />
-        <div className="absolute top-4 left-4 z-10">
-          <AIEvaluationPanelTest />
-        </div>
+        <EvaluationPanel isOpen={isEvalOpen} onClose={() => setIsEvalOpen(false)} />
       </ReactFlow>
     </div>
   );
@@ -153,11 +155,16 @@ function CanvasInner() {
 
 // ─── Wrapper Component ──────────────────────────────────────────────────────
 
-export function CanvasArea() {
+interface CanvasAreaProps {
+  isEvalOpen: boolean;
+  setIsEvalOpen: (open: boolean) => void;
+}
+
+export function CanvasArea({ isEvalOpen, setIsEvalOpen }: CanvasAreaProps) {
   return (
     <div className="flex-1 h-full w-full bg-surface">
       <ReactFlowProvider>
-        <CanvasInner />
+        <CanvasInner isEvalOpen={isEvalOpen} setIsEvalOpen={setIsEvalOpen} />
       </ReactFlowProvider>
     </div>
   );
