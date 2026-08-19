@@ -41,7 +41,10 @@ export function EvaluationPanel({ isOpen, onClose }: EvaluationPanelProps) {
           </span>
         </h2>
         <button
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           className="text-gray-400 hover:text-white transition-colors bg-gray-800 hover:bg-gray-700 p-1 rounded-full"
           aria-label="Close"
         >
