@@ -4,7 +4,6 @@ import { CanvasArea } from './components/canvas/CanvasArea';
 import { useCanvasStore } from './store/canvasStore';
 import { HistoryModal } from './components/ui/HistoryModal';
 import { CodeModal } from './components/ui/CodeModal';
-import { AIEvaluationPanelTest } from './components/ui/AIEvaluationPanel';
 import { exportToJson, exportToPng } from './utils/exportUtils';
 import { API_BASE_URL } from './utils/apiConfig';
 
@@ -132,11 +131,6 @@ function App() {
       <main className="flex flex-1 overflow-hidden relative">
         <Sidebar />
         <CanvasArea isEvalOpen={isEvalOpen} setIsEvalOpen={setIsEvalOpen} />
-
-        {/* ── AI Evaluation Panel (floating overlay) ── */}
-        <div className="absolute top-4 right-4 z-20">
-          <AIEvaluationPanelTest />
-        </div>
       </main>
 
       {/* ── History Modal ── */}
