@@ -44,12 +44,31 @@ export function HistoryModal({ onClose }: HistoryModalProps) {
     e.preventDefault();
     try {
       const rawNodes = record.nodes ?? [];
-      const nodes = rawNodes.map((node: any) => ({
+      const rawEdges = record.edges ?? [];
+
+      // Validate and normalize nodes — filter out any malformed entries
+      const nodes = rawNodes
+        .filter((node: any) => node && typeof node === 'object' && node.id)
+        .map((node: any) => ({
           ...node,
-          position: node.position || { x: 0, y: 0 } // Fallback for legacy DB records
-      }));
-      const edges = record.edges ?? [];
-      
+          id: String(node.id),
+          type: node.type || 'systemComponent',
+          position: node.position && typeof node.position.x === 'number'
+            ? node.position
+            : { x: 0, y: 0 },
+          data: node.data && typeof node.data === 'object' ? node.data : {},
+        }));
+
+      // Validate and normalize edges
+      const edges = rawEdges
+        .filter((edge: any) => edge && typeof edge === 'object' && edge.source && edge.target)
+        .map((edge: any) => ({
+          ...edge,
+          id: String(edge.id || `${edge.source}-${edge.target}`),
+          source: String(edge.source),
+          target: String(edge.target),
+        }));
+
       setCanvasState(nodes, edges);
       onClose();
     } catch (error) {

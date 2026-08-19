@@ -38,15 +38,34 @@ function CanvasInner() {
 
   // ─── Auto-Save Pipeline ───
   const isInitialMount = useRef(true);
+  const prevNodesRef = useRef(nodes);
+  const prevEdgesRef = useRef(edges);
 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
+      prevNodesRef.current = nodes;
+      prevEdgesRef.current = edges;
       return;
     }
 
-    // Do not trigger the save function on the initial mount if the canvas is empty
+    // Skip save if nodes/edges reference changed entirely (bulk state restore from history)
+    // but still allow saves for incremental drag/add/remove changes
+    const nodesReplaced = nodes !== prevNodesRef.current && nodes.length > 0 &&
+      prevNodesRef.current.length > 0 &&
+      !nodes.some((n) => prevNodesRef.current.includes(n));
+
+    prevNodesRef.current = nodes;
+    prevEdgesRef.current = edges;
+
+    // Do not trigger the save function if the canvas is empty
     if (nodes.length === 0 && edges.length === 0) {
+      return;
+    }
+
+    // Skip the first save after a bulk canvas state replacement (e.g., history load)
+    if (nodesReplaced) {
+      console.log('Skipping auto-save: canvas state was bulk-replaced (history load).');
       return;
     }
 
