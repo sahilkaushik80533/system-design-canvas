@@ -12,6 +12,7 @@ import { useCanvasStore } from '../../store/canvasStore';
 import { SystemNode } from '../nodes/SystemNode';
 import { NNNode } from '../nodes/NNNode';
 import { EvaluationPanel } from '../ui/EvaluationPanel';
+import { AIEvaluationPanelTest } from '../ui/AIEvaluationPanel';
 import type { CanvasNodeData } from '../../types/canvas.types';
 import { API_BASE_URL } from '../../utils/apiConfig';
 
@@ -142,6 +143,9 @@ function CanvasInner() {
         <Background color="#363a4f" gap={16} />
         <Controls />
         <EvaluationPanel />
+        <div className="absolute top-4 left-4 z-10">
+          <AIEvaluationPanelTest />
+        </div>
       </ReactFlow>
     </div>
   );
