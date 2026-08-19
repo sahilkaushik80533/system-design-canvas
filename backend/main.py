@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from database import engine, Base, SessionLocal
 from models.architecture import ArchitecturePayload
 from models.db_models import ArchitectureRecord
@@ -31,6 +32,16 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"status": "online", "message": "System Design Architecture API is running"}
+
+@app.get("/api/keep-alive")
+async def keep_alive(db: Session = Depends(get_db)):
+    """Lightweight health-check that pings Supabase to reset the free-tier inactivity timer."""
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "awake", "database": "connected"}
+    except Exception as e:
+        print(f"[WARN] Keep-alive DB ping failed: {e}")
+        return {"status": "awake", "database": "unreachable", "error": str(e)}
 
 @app.post("/api/evaluate")
 async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depends(get_db)):
