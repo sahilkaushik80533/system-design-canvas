@@ -3,12 +3,11 @@ import { useCanvasStore } from '../../store/canvasStore';
 import { API_BASE_URL } from '../../utils/apiConfig';
 
 interface HistoryRecord {
-  id: number;
-  score: number;
-  payload: {
-    nodes: any[];
-    edges: any[];
-  };
+  id: string;
+  score: number | null;
+  nodes: any[];
+  edges: any[];
+  created_at: string;
 }
 
 interface HistoryModalProps {
@@ -44,28 +43,17 @@ export function HistoryModal({ onClose }: HistoryModalProps) {
   const handleLoad = (e: React.MouseEvent, record: HistoryRecord) => {
     e.preventDefault();
     try {
-      let parsedPayload = record.payload;
-      // Handle first layer of stringification
-      if (typeof parsedPayload === 'string') {
-        parsedPayload = JSON.parse(parsedPayload);
-      }
-      // Handle accidental double-stringification from SQLite
-      if (typeof parsedPayload === 'string') {
-        parsedPayload = JSON.parse(parsedPayload);
-      }
-      
-      console.log("Successfully parsed payload:", parsedPayload);
-      const rawNodes = parsedPayload?.nodes || [];
+      const rawNodes = record.nodes ?? [];
       const nodes = rawNodes.map((node: any) => ({
           ...node,
           position: node.position || { x: 0, y: 0 } // Fallback for legacy DB records
       }));
-      const edges = parsedPayload?.edges || [];
+      const edges = record.edges ?? [];
       
       setCanvasState(nodes, edges);
       onClose();
     } catch (error) {
-      console.error("Failed to parse saved architecture payload:", error);
+      console.error("Failed to load saved architecture:", error);
       alert("Error loading architecture data. Check console.");
     }
   };
@@ -105,32 +93,25 @@ export function HistoryModal({ onClose }: HistoryModalProps) {
               No architectures saved yet.
             </div>
           ) : (
-            history.map((record) => {
-              let payload = record.payload;
-              try {
-                if (typeof payload === 'string') {
-                  payload = JSON.parse(payload);
-                }
-                if (typeof payload === 'string') {
-                  payload = JSON.parse(payload);
-                }
-              } catch (e) {
-                // Ignore parsing errors for display
-              }
-              return (
+            history.map((record) => (
               <div
                 key={record.id}
                 className="flex items-center justify-between bg-gray-800/50 p-4 rounded-xl border border-gray-700/50 hover:border-indigo-500/50 transition-colors group"
               >
                 <div>
-                  <h3 className="font-semibold text-white">Architecture #{record.id}</h3>
+                  <h3 className="font-semibold text-white">Architecture #{record.id.slice(0, 8)}</h3>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-xs text-gray-400">
-                      Nodes: {payload.nodes ? payload.nodes.length : 0}
+                      Nodes: {record.nodes?.length ?? 0}
                     </span>
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-900/40 text-indigo-300 border border-indigo-700/50">
-                      Score: {record.score}
+                    <span className="text-xs text-gray-400">
+                      Edges: {record.edges?.length ?? 0}
                     </span>
+                    {record.score != null && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-900/40 text-indigo-300 border border-indigo-700/50">
+                        Score: {record.score}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <button
@@ -141,10 +122,11 @@ export function HistoryModal({ onClose }: HistoryModalProps) {
                   Load
                 </button>
               </div>
-            )})
+            ))
           )}
         </div>
       </div>
     </div>
   );
 }
+
