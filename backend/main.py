@@ -43,60 +43,30 @@ async def keep_alive(db: Session = Depends(get_db)):
         print(f"[WARN] Keep-alive DB ping failed: {e}")
         return {"status": "awake", "database": "unreachable", "error": str(e)}
 
+from services.ai_evaluator import evaluate_architecture_with_ai
+
 @app.post("/api/evaluate")
 async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depends(get_db)):
-    # Split nodes based on React Flow custom node types defined in the frontend
-    system_nodes = [n for n in payload.nodes if n.type == "systemComponent"]
-    nn_nodes = [n for n in payload.nodes if n.type == "neuralLayer"]
-
-    # Filter edges to only those relevant to each subsystem
-    sys_node_ids = {n.id for n in system_nodes}
-    nn_node_ids = {n.id for n in nn_nodes}
-    sys_edges = [e for e in payload.edges if e.source in sys_node_ids and e.target in sys_node_ids]
-    nn_edges = [e for e in payload.edges if e.source in nn_node_ids and e.target in nn_node_ids]
-
-    # Evaluate subsystems independently
-    sys_eval = evaluate_system_architecture(system_nodes, sys_edges)
-    nn_eval = evaluate_nn_architecture(nn_nodes, nn_edges)
-
-
-    # Calculate an overall composite score
-    overall_score = 100
-    if system_nodes:
-        sys_scores = sys_eval.get("scores", {})
-        sys_avg = sum(sys_scores.values()) / max(1, len(sys_scores))
-        overall_score = sys_avg
-        
-    if nn_nodes and not nn_eval.get("valid"):
-        overall_score *= 0.5  # 50% penalty if the NN architecture violates hard constraints
-
-    # Persist to DB safely
+    # Call the LLM to evaluate the architecture
+    ai_result = await evaluate_architecture_with_ai(payload)
+    
+    # Persist the evaluation result to the database
     record_id = None
     try:
         record = ArchitectureRecord(
-            nodes=[n.model_dump() for n in payload.nodes],
-            edges=[e.model_dump() for e in payload.edges],
-            score=int(overall_score)
+            payload=payload.model_dump(),
+            score=ai_result.score
         )
         db.add(record)
         db.commit()
         db.refresh(record)
-        record_id = str(record.id)
+        record_id = record.id
     except Exception as e:
         db.rollback()
-        # Log but don't fail the evaluation — persistence is best-effort
         print(f"[WARN] Failed to persist evaluation record: {e}")
 
-    return {
-        "status": "success",
-        "message": "Evaluation complete",
-        "overall_score": round(overall_score, 2),
-        "system_evaluation": sys_eval,
-        "nn_evaluation": nn_eval,
-        "node_count": len(payload.nodes),
-        "edge_count": len(payload.edges),
-        "record_id": record_id
-    }
+    # Return the exact JSON schema expected by the frontend AIEvaluationPanel
+    return ai_result.model_dump()
 
 @app.get("/api/history")
 async def get_history(db: Session = Depends(get_db)):
