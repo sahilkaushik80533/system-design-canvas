@@ -54,13 +54,14 @@ async def evaluate_architecture(payload: ArchitecturePayload, db: Session = Depe
     record_id = None
     try:
         record = ArchitectureRecord(
-            payload=payload.model_dump(),
+            nodes=[n.model_dump() for n in payload.nodes],
+            edges=[e.model_dump() for e in payload.edges],
             score=ai_result.score
         )
         db.add(record)
         db.commit()
         db.refresh(record)
-        record_id = record.id
+        record_id = str(record.id)
     except Exception as e:
         db.rollback()
         print(f"[WARN] Failed to persist evaluation record: {e}")
