@@ -6,6 +6,7 @@ import { HistoryModal } from './components/ui/HistoryModal';
 import { CodeModal } from './components/ui/CodeModal';
 import { exportToJson, exportToPng } from './utils/exportUtils';
 import { API_BASE_URL } from './utils/apiConfig';
+import type { EvaluationResult } from './components/ui/EvaluationPanel';
 
 function App() {
   const nodes = useCanvasStore((state) => state.nodes);
@@ -13,12 +14,12 @@ function App() {
 
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isEvalOpen, setIsEvalOpen] = useState(false);
+  const [evalData, setEvalData] = useState<EvaluationResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
   
-  const setEvaluationResult = useCanvasStore((state) => state.setEvaluationResult);
   const clearCanvas = useCanvasStore((state) => state.clearCanvas);
 
   const handleEvaluate = async () => {
@@ -36,12 +37,11 @@ function App() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const result = await response.json();
-      setEvaluationResult(result);
+      const result: EvaluationResult = await response.json();
+      setEvalData(result);
       setIsEvalOpen(true);
     } catch (error) {
       console.error('Failed to evaluate architecture:', error);
-      // Removed alert as per standard pattern, UI could be extended to show toast errors
     } finally {
       setIsEvaluating(false);
     }
@@ -130,7 +130,11 @@ function App() {
       {/* ── Main Layout ── */}
       <main className="flex flex-1 overflow-hidden relative">
         <Sidebar />
-        <CanvasArea isEvalOpen={isEvalOpen} setIsEvalOpen={setIsEvalOpen} />
+        <CanvasArea
+          isEvalOpen={isEvalOpen}
+          setIsEvalOpen={setIsEvalOpen}
+          evalData={evalData}
+        />
       </main>
 
       {/* ── History Modal ── */}

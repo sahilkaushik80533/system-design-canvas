@@ -12,6 +12,7 @@ import { useCanvasStore } from '../../store/canvasStore';
 import { SystemNode } from '../nodes/SystemNode';
 import { NNNode } from '../nodes/NNNode';
 import { EvaluationPanel } from '../ui/EvaluationPanel';
+import type { EvaluationResult } from '../ui/EvaluationPanel';
 import type { CanvasNodeData } from '../../types/canvas.types';
 import { API_BASE_URL } from '../../utils/apiConfig';
 
@@ -27,9 +28,10 @@ const nodeTypes = {
 interface CanvasInnerProps {
   isEvalOpen: boolean;
   setIsEvalOpen: (open: boolean) => void;
+  evalData: EvaluationResult | null;
 }
 
-function CanvasInner({ isEvalOpen, setIsEvalOpen }: CanvasInnerProps) {
+function CanvasInner({ isEvalOpen, setIsEvalOpen, evalData }: CanvasInnerProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -149,7 +151,7 @@ function CanvasInner({ isEvalOpen, setIsEvalOpen }: CanvasInnerProps) {
       </ReactFlow>
 
       {/* Rendered OUTSIDE ReactFlow to avoid portal duplication and event swallowing */}
-      <EvaluationPanel isOpen={isEvalOpen} onClose={() => setIsEvalOpen(false)} />
+      <EvaluationPanel isOpen={isEvalOpen} onClose={() => setIsEvalOpen(false)} data={evalData} />
     </div>
   );
 }
@@ -159,13 +161,14 @@ function CanvasInner({ isEvalOpen, setIsEvalOpen }: CanvasInnerProps) {
 interface CanvasAreaProps {
   isEvalOpen: boolean;
   setIsEvalOpen: (open: boolean) => void;
+  evalData: EvaluationResult | null;
 }
 
-export function CanvasArea({ isEvalOpen, setIsEvalOpen }: CanvasAreaProps) {
+export function CanvasArea({ isEvalOpen, setIsEvalOpen, evalData }: CanvasAreaProps) {
   return (
     <div className="flex-1 h-full w-full bg-surface">
       <ReactFlowProvider>
-        <CanvasInner isEvalOpen={isEvalOpen} setIsEvalOpen={setIsEvalOpen} />
+        <CanvasInner isEvalOpen={isEvalOpen} setIsEvalOpen={setIsEvalOpen} evalData={evalData} />
       </ReactFlowProvider>
     </div>
   );
