@@ -1,4 +1,3 @@
-import { Panel } from '@xyflow/react';
 import { useCanvasStore } from '../../store/canvasStore';
 
 interface EvaluationPanelProps {
@@ -28,9 +27,10 @@ export function EvaluationPanel({ isOpen, onClose }: EvaluationPanelProps) {
   ];
 
   return (
-    <Panel
-      position="top-right"
-      className="nodrag nopan bg-[#242736] p-5 rounded-2xl shadow-2xl border border-gray-700/50 w-[350px] text-gray-200 max-h-[85vh] overflow-y-auto backdrop-blur-md pointer-events-auto z-50"
+    <div
+      className="nodrag nopan pointer-events-auto absolute top-4 right-4 z-50 bg-[#242736] p-5 rounded-2xl shadow-2xl border border-gray-700/50 w-[350px] text-gray-200 max-h-[85vh] overflow-y-auto backdrop-blur-md"
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
     >
       <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-3">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -45,7 +45,7 @@ export function EvaluationPanel({ isOpen, onClose }: EvaluationPanelProps) {
             e.stopPropagation();
             onClose();
           }}
-          className="nodrag nopan text-gray-400 hover:text-white transition-colors bg-gray-800 hover:bg-gray-700 p-1 rounded-full"
+          className="nodrag nopan pointer-events-auto text-gray-400 hover:text-white transition-colors bg-gray-800 hover:bg-gray-700 p-1 rounded-full"
           aria-label="Close"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -125,6 +125,6 @@ export function EvaluationPanel({ isOpen, onClose }: EvaluationPanelProps) {
           </ul>
         </div>
       )}
-    </Panel>
+    </div>
   );
 }

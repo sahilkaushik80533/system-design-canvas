@@ -12,7 +12,6 @@ import { useCanvasStore } from '../../store/canvasStore';
 import { SystemNode } from '../nodes/SystemNode';
 import { NNNode } from '../nodes/NNNode';
 import { EvaluationPanel } from '../ui/EvaluationPanel';
-import { AIEvaluationPanelTest } from '../ui/AIEvaluationPanel';
 import type { CanvasNodeData } from '../../types/canvas.types';
 import { API_BASE_URL } from '../../utils/apiConfig';
 
@@ -132,7 +131,7 @@ function CanvasInner({ isEvalOpen, setIsEvalOpen }: CanvasInnerProps) {
   );
 
   return (
-    <div className="w-full h-full" ref={reactFlowWrapper}>
+    <div className="w-full h-full relative" ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -147,8 +146,10 @@ function CanvasInner({ isEvalOpen, setIsEvalOpen }: CanvasInnerProps) {
       >
         <Background color="#363a4f" gap={16} />
         <Controls />
-        <EvaluationPanel isOpen={isEvalOpen} onClose={() => setIsEvalOpen(false)} />
       </ReactFlow>
+
+      {/* Rendered OUTSIDE ReactFlow to avoid portal duplication and event swallowing */}
+      <EvaluationPanel isOpen={isEvalOpen} onClose={() => setIsEvalOpen(false)} />
     </div>
   );
 }
